@@ -273,6 +273,27 @@ body {
 
 .btn-back:hover { color: var(--text-2); }
 
+.btn-forgot-pass {
+  width: 100%;
+  padding: 10px;
+  background: none;
+  color: var(--primary);
+  border: none;
+  border-radius: var(--r-md);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: all 0.2s var(--ease);
+  text-decoration: none;
+}
+
+.btn-forgot-pass:hover {
+  background: rgba(200,120,58,0.08);
+  color: var(--primary-dark);
+}
+
 /* ======================================================
    APP SHELL
    ====================================================== */

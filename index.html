@@ -31,6 +31,7 @@
                     <input type="password" id="passInput" placeholder="••••••••" value="1234">
                 </div>
                 <button class="btn-login" onclick="doLogin()">Iniciar Sesión →</button>
+                <button class="btn-forgot-pass" onclick="openForgotPassword()">¿Olvidaste tu contraseña?</button>
             </div>
 
             <!-- Role Selector -->
@@ -453,6 +454,26 @@
                 <div class="modal-btns full" style="margin-top:20px">
                     <button type="button" class="btn-modal-sec" onclick="closeModal('userModal')">Cancelar</button>
                     <button type="submit" class="btn-modal-pri">Guardar Usuario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FORGOT PASSWORD MODAL -->
+    <div class="modal-overlay" id="forgotPassModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Recuperar Contraseña</h3>
+                <p>Ingresa tu correo y te enviaremos instrucciones</p>
+            </div>
+            <form onsubmit="event.preventDefault(); processForgotPassword();" style="padding:20px 0">
+                <div class="form-group full">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="forgotEmail" placeholder="correo@snackroque.com" required>
+                </div>
+                <div class="modal-btns" style="margin-top:24px">
+                    <button type="button" class="btn-modal-sec" onclick="closeModal('forgotPassModal')">Cancelar</button>
+                    <button type="submit" class="btn-modal-pri">📧 Enviar Instrucciones</button>
                 </div>
             </form>
         </div>

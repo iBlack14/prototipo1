@@ -119,6 +119,46 @@ window.logout = () => {
   document.querySelector('.login-card').classList.remove('wide-mode');
 };
 
+// --- FORGOT PASSWORD ---
+window.openForgotPassword = () => {
+  document.getElementById('forgotEmail').value = '';
+  document.getElementById('forgotPassModal').classList.add('open');
+};
+
+window.processForgotPassword = () => {
+  const email = document.getElementById('forgotEmail').value.trim();
+  
+  if (!email) {
+    showNotif('⚠️ Ingresa tu correo');
+    return;
+  }
+  
+  const user = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+  
+  if (!user) {
+    showNotif('❌ Correo no encontrado en el sistema');
+    return;
+  }
+  
+  // Simular envío de correo
+  const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const recoveryLink = `${window.location.origin}${window.location.pathname}?reset=${token}&email=${encodeURIComponent(email)}`;
+  
+  // Aquí en producción se enviaría un correo real
+  console.log('📧 CORREO DE RECUPERACIÓN SIMULADO:');
+  console.log(`Para: ${email}`);
+  console.log(`Enlace: ${recoveryLink}`);
+  console.log(`Token: ${token}`);
+  
+  showNotif('✅ Instrucciones enviadas a ' + email);
+  closeModal('forgotPassModal');
+  
+  // Mostrar alerta con instrucciones simuladas
+  setTimeout(() => {
+    alert(`📧 Correo enviado a: ${email}\n\nEn producción recibirías un enlace de recuperación.\n\nPara demo, usa:\nUsuario: admin\nContraseña: admin123`);
+  }, 1000);
+};
+
 // --- NAVIGATION ---
 window.showScreen = (name, btn) => {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
