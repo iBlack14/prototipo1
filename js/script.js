@@ -21,6 +21,9 @@ let sales = JSON.parse(localStorage.getItem('p1_sales')) || [
   { id: 36, items: [{name:'Torta chocolate', qty:1, price:45}], total: 45.00, time: '11:28 am', date: new Date().toLocaleDateString() }
 ];
 
+let cashClosures = JSON.parse(localStorage.getItem('p1_cashClosures')) || [];
+let activeCashier = JSON.parse(localStorage.getItem('p1_activeCashier')) || null;
+
 let currentUser = null;
 let selectedRole = null;
 let cart = [];
@@ -31,6 +34,8 @@ const saveData = () => {
     localStorage.setItem('p1_products', JSON.stringify(products));
     localStorage.setItem('p1_users', JSON.stringify(users));
     localStorage.setItem('p1_sales', JSON.stringify(sales));
+    localStorage.setItem('p1_cashClosures', JSON.stringify(cashClosures));
+    localStorage.setItem('p1_activeCashier', JSON.stringify(activeCashier));
 };
 
 // --- AUTH ---
@@ -122,11 +127,12 @@ window.showScreen = (name, btn) => {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (btn) btn.classList.add('active');
   
-  const titles = { dashboard: 'Resumen General', ventas: 'Punto de Venta', productos: 'Inventario de Productos', reportes: 'Análisis de Ventas', usuarios: 'Control de Usuarios' };
+  const titles = { dashboard: 'Resumen General', ventas: 'Punto de Venta', productos: 'Inventario de Productos', reportes: 'Análisis de Ventas', usuarios: 'Control de Usuarios', cierre: 'Cierre de Caja' };
   document.getElementById('pageTitle').textContent = titles[name] || name;
 
   if(name === 'dashboard') updateDashboard();
   if(name === 'reportes') renderReports();
+  if(name === 'cierre') renderCashClosures();
 };
 
 window.toggleSidebar = () => {
@@ -511,6 +517,86 @@ const renderReports = () => {
                 <td style="font-weight:700;color:var(--brown)">S/. ${(qty * (products.find(p=>p.name===name)?.price||0)).toFixed(2)}</td>
             </tr>
         `).join('');
+    }
+};
+
+// --- CASH CLOSING ---
+window.openCashClosing = () => {
+    const todaySales = sales.filter(s => s.date === new Date().toLocaleDateString());
+    const totalSales = todaySales.reduce((sum, s) => sum + s.total, 0);
+    
+    document.getElementById('cashOpenTime').textContent = activeCashier ? new Date(activeCashier.openTime).toLocaleTimeString() : 'Sin apertura';
+    document.getElementById('cashTotalSales').textContent = 'S/. ' + totalSales.toFixed(2);
+    document.getElementById('cashNumTransactions').textContent = todaySales.length;
+    document.getElementById('cashInitialBalance').value = activeCashier ? activeCashier.initialBalance : '0.00';
+    document.getElementById('cashReceivedAmount').value = totalSales.toFixed(2);
+    document.getElementById('cashDeclaredAmount').value = '';
+    
+    document.getElementById('cashClosureModal').classList.add('open');
+};
+
+window.processCashClosure = () => {
+    const initialBalance = parseFloat(document.getElementById('cashInitialBalance').value || 0);
+    const totalSales = parseFloat(document.getElementById('cashReceivedAmount').value || 0);
+    const declaredAmount = parseFloat(document.getElementById('cashDeclaredAmount').value || 0);
+    
+    if(!declaredAmount || declaredAmount < 0) {
+        showNotif('⚠️ Ingresa el monto total en efectivo');
+        return;
+    }
+    
+    const todaySales = sales.filter(s => s.date === new Date().toLocaleDateString());
+    const difference = declaredAmount - (initialBalance + totalSales);
+    
+    const closure = {
+        id: cashClosures.length + 1,
+        userId: currentUser.id,
+        userName: currentUser.name,
+        openTime: activeCashier ? activeCashier.openTime : new Date().toISOString(),
+        closeTime: new Date().toISOString(),
+        date: new Date().toLocaleDateString(),
+        initialBalance: initialBalance,
+        totalSales: totalSales,
+        totalRefunds: 0,
+        totalCash: declaredAmount,
+        difference: difference,
+        status: difference === 0 ? 'balanced' : difference > 0 ? 'overage' : 'shortage',
+        notes: document.getElementById('cashClosureNotes').value || ''
+    };
+    
+    cashClosures.push(closure);
+    activeCashier = null;
+    saveData();
+    
+    showNotif(difference === 0 ? '✅ Caja cerrada correctamente' : (difference > 0 ? '⚠️ Sobrante detectado' : '⚠️ Faltante detectado'));
+    closeModal('cashClosureModal');
+    renderCashClosures();
+};
+
+const renderCashClosures = () => {
+    const container = document.getElementById('cashClosuresTable');
+    if(!container) return;
+    
+    const tbody = container.querySelector('tbody');
+    if(!tbody) return;
+    
+    tbody.innerHTML = cashClosures.slice().reverse().map(c => `
+        <tr>
+            <td>${c.date}</td>
+            <td>${c.userName}</td>
+            <td>S/. ${c.initialBalance.toFixed(2)}</td>
+            <td>S/. ${c.totalSales.toFixed(2)}</td>
+            <td>S/. ${c.totalCash.toFixed(2)}</td>
+            <td>
+                <span class="diff-badge ${c.status === 'balanced' ? 'balanced' : c.status === 'overage' ? 'overage' : 'shortage'}">
+                    S/. ${c.difference >= 0 ? '+' : ''}${c.difference.toFixed(2)} - ${c.status === 'balanced' ? 'Cuadre' : c.status === 'overage' ? 'Sobrante' : 'Faltante'}
+                </span>
+            </td>
+        </tr>
+    `).join('');
+    
+    if(cashClosures.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-light)">Sin registros de cierre</td></tr>';
     }
 };
 

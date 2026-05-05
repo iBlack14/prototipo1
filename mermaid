@@ -1,0 +1,99 @@
+erDiagram
+    rol ||--o{ usuario : "define permisos de"
+    usuario ||--o{ venta : "registra"
+    usuario ||--o{ compra : "gestiona"
+    usuario ||--o{ cierre_caja : "realiza"
+    cliente ||--o{ venta : "realiza"
+    categoria ||--o{ producto : "clasifica"
+    producto ||--o{ detalle_venta : "se vende en"
+    venta ||--o{ detalle_venta : "contiene"
+    venta ||--o{ cierre_caja : "pertenece a"
+    proveedor ||--o{ compra : "abastece"
+    compra ||--o{ detalle_compra : "desglosa"
+    producto ||--o{ detalle_compra : "se adquiere en"
+
+    rol {
+        int id_rol PK
+        string nombre
+    }
+
+    usuario {
+        int id_usuario PK
+        int id_rol FK
+        string nombre
+        string user_login
+        string password
+        string status_usuario
+    }
+
+    cliente {
+        int id_cliente PK
+        string nombre
+    }
+
+    categoria {
+        int id_categoria PK
+        string nombre
+        string desc_categoria
+    }
+
+    producto {
+        int id_producto PK
+        int id_categoria FK
+        string nombre
+        decimal precio
+        int num_stock
+    }
+
+    venta {
+        int id_venta PK
+        int id_usuario FK
+        int id_cliente FK
+        datetime fec_venta
+        string metodo_pago
+        decimal tot_pago
+    }
+
+    detalle_venta {
+        int id_detalle_venta PK
+        int id_venta FK
+        int id_producto FK
+        int num_cantidad
+        decimal precio_unitario
+    }
+
+    proveedor {
+        int id_proveedor PK
+        string nombre
+        string num_telefono
+        string desc_direccion
+    }
+
+    compra {
+        int id_compra PK
+        int id_proveedor FK
+        int id_usuario FK
+        datetime fec_compra
+        decimal tot_compra
+    }
+
+    detalle_compra {
+        int id_detalle_compra PK
+        int id_compra FK
+        int id_producto FK
+        int num_cantidad
+        decimal precio_compra
+    }
+
+    cierre_caja {
+        int id_cierre_caja PK
+        int id_usuario FK
+        datetime fec_apertura
+        datetime fec_cierre
+        decimal saldo_inicial
+        decimal total_ventas
+        decimal total_devoluciones
+        decimal total_efectivo
+        decimal diferencia
+        string estado_cierre
+    }
