@@ -1,58 +1,102 @@
 erDiagram
-    rol ||--o{ usuario : "define permisos de"
-    usuario ||--o{ venta : "registra"
-    usuario ||--o{ compra : "gestiona"
-    usuario ||--o{ cierre_caja : "realiza"
-    cliente ||--o{ venta : "realiza"
-    categoria ||--o{ producto : "clasifica"
-    producto ||--o{ detalle_venta : "se vende en"
-    venta ||--o{ detalle_venta : "contiene"
-    venta ||--o{ cierre_caja : "pertenece a"
-    proveedor ||--o{ compra : "abastece"
-    compra ||--o{ detalle_compra : "desglosa"
-    producto ||--o{ detalle_compra : "se adquiere en"
+    rol ||--o{ usuario : define
+    usuario ||--o{ venta : registra
+    usuario ||--o{ compra : registra
+    usuario ||--o{ cierre_caja : realiza
+    usuario ||--o{ movimiento_stock : registra
+    usuario ||--o{ auditoria : registra
+
+    cliente ||--o{ venta : realiza
+    proveedor ||--o{ compra : abastece
+
+    categoria ||--o{ producto : clasifica
+
+    producto ||--o{ detalle_venta : vendido
+    producto ||--o{ detalle_compra : comprado
+    producto ||--o{ movimiento_stock : genera
+
+    venta ||--o{ detalle_venta : contiene
+    venta ||--o{ devolucion : genera
+    venta ||--o{ movimiento_stock : descuenta
+    venta }o--|| metodo_pago : usa
+
+    compra ||--o{ detalle_compra : contiene
+    compra ||--o{ movimiento_stock : incrementa
 
     rol {
         int id_rol PK
-        string nombre
+        string nom_rol
+        string estado
     }
 
     usuario {
         int id_usuario PK
         int id_rol FK
-        string nombre
+        string nom_usuario
         string user_login
-        string password
-        string email
-        string status_usuario
+        string val_password
+        string val_email
+        string estado
+        datetime fec_registro
     }
 
     cliente {
         int id_cliente PK
-        string nombre
+        string nom_cliente
+        string num_documento
+        string num_telefono
+        string estado
+    }
+
+    proveedor {
+        int id_proveedor PK
+        string nom_proveedor
+        string num_telefono
+        string desc_direccion
+        string estado
     }
 
     categoria {
         int id_categoria PK
-        string nombre
+        string nom_categoria
         string desc_categoria
+        string estado
     }
 
     producto {
         int id_producto PK
         int id_categoria FK
-        string nombre
-        decimal precio
+        string nom_producto
+        decimal tot_precio
         int num_stock
+        int num_stock_minimo
+        string estado
+    }
+
+    metodo_pago {
+        int id_metodo_pago PK
+        string nom_metodo
+        string estado
+        
+        %% EFECTIVO
+        %% YAPE
+        %% PLIN
+        %% TRANSFERENCIA
+        %% TARJETA_DEBITO
+        %% TARJETA_CREDITO
+        
+        %% ACTIVO
+        %% INACTIVO
     }
 
     venta {
         int id_venta PK
         int id_usuario FK
         int id_cliente FK
+        int id_metodo_pago FK
         datetime fec_venta
-        string metodo_pago
         decimal tot_pago
+        string estado
     }
 
     detalle_venta {
@@ -60,22 +104,17 @@ erDiagram
         int id_venta FK
         int id_producto FK
         int num_cantidad
-        decimal precio_unitario
-    }
-
-    proveedor {
-        int id_proveedor PK
-        string nombre
-        string num_telefono
-        string desc_direccion
+        decimal tot_precio_unitario
+        decimal tot_subtotal
     }
 
     compra {
         int id_compra PK
-        int id_proveedor FK
         int id_usuario FK
+        int id_proveedor FK
         datetime fec_compra
         decimal tot_compra
+        string estado
     }
 
     detalle_compra {
@@ -83,7 +122,32 @@ erDiagram
         int id_compra FK
         int id_producto FK
         int num_cantidad
-        decimal precio_compra
+        decimal tot_precio_compra
+        decimal tot_subtotal
+    }
+
+    movimiento_stock {
+        int id_movimiento PK
+        int id_producto FK
+        int id_usuario FK
+        int id_venta FK
+        int id_compra FK
+        string tipo_movimiento
+        int num_cantidad
+        datetime fec_movimiento
+        
+        %% ENTRADA
+        %% SALIDA
+        %% AJUSTE
+        %% DEVOLUCION
+    }
+
+    devolucion {
+        int id_devolucion PK
+        int id_venta FK
+        decimal tot_devolucion
+        string motivo
+        datetime fec_devolucion
     }
 
     cierre_caja {
@@ -91,10 +155,21 @@ erDiagram
         int id_usuario FK
         datetime fec_apertura
         datetime fec_cierre
-        decimal saldo_inicial
-        decimal total_ventas
-        decimal total_devoluciones
-        decimal total_efectivo
-        decimal diferencia
-        string estado_cierre
+        decimal tot_inicial
+        decimal tot_ventas
+        decimal tot_yape
+        decimal tot_plin
+        decimal tot_transferencia
+        decimal tot_tarjeta
+        decimal tot_efectivo
+        decimal tot_diferencia
+        string estado
+    }
+
+    auditoria {
+        int id_auditoria PK
+        int id_usuario FK
+        string nom_tabla
+        string accion
+        datetime fec_evento
     }
